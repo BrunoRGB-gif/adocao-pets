@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Área do Doador - AdotPet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+      }
+      header {
+        background-color: #4caf50;
+        padding: 15px 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: white;
+        font-weight: 700;
+        font-size: 1.8rem;
+      }
+      main {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: auto;
+      }
+      .pet-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      .pet-info {
+        display: flex;
+        align-items: center;
+      }
+      .pet-info img {
+        width: 120px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 1rem;
+      }
+      .modal-form {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 500px;
+      }
+      .messages-sidebar {
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #fff;
+        padding: 1rem;
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+        z-index: 999;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <svg role="img" aria-label="Logo AdotPet" viewBox="0 0 128 64" xmlns="http://www.w3.org/2000/svg" fill="white" width="40">
+        <circle cx="22" cy="25" r="9" />
+        <circle cx="42" cy="15" r="7" />
+        <circle cx="62" cy="25" r="9" />
+        <circle cx="42" cy="38" r="10" />
+        <ellipse cx="42" cy="52" rx="25" ry="17" />
+      </svg>
+      <span class="logo-text">AdotPet</span>
+    </header>
+
+    <main>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>🐾 Meus Pets</h3>
+        <button class="btn btn-success" onclick="abrirModal()">
+          <i class="fas fa-plus"></i> Cadastrar novo pet
+        </button>
+      </div>
+
+      <div th:if="${#lists.isEmpty(pets)}" class="text-muted">Você ainda não cadastrou nenhum pet.</div>
+
+      <div th:each="pet : ${pets}" class="pet-card">
+        <div class="pet-info">
+          <img th:src="@{'/imagens/' + ${pet.nomeImagem}}" alt="Imagem do pet" />
+          <div>
+            <h5 th:text="${pet.nome}"></h5>
+            <p><strong>Espécie:</strong> <span th:text="${pet.especie}"></span></p>
+            <p><strong>Idade:</strong> <span th:text="${pet.idade}"></span> anos</p>
+            <p><strong>Cidade:</strong> <span th:text="${pet.cidade}"></span></p>
+            <p th:text="${pet.descricao}"></p>
+          </div>
+        </div>
+        <div>
+          <a th:href="@{'/homeDoador/pets/editar/' + ${pet.id}}" class="btn btn-warning btn-sm">Editar</a>
+          <form th:action="@{'/homeDoador/pets/excluir/' + ${pet.id}}" method="post" style="display:inline;" onsubmit="return confirm('Deseja excluir este pet?');">
+            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal Cadastro -->
+    <div class="modal-form" id="formPet">
+      <div class="modal-content">
+        <h4>Cadastrar Novo Pet</h4>
+        <form action="/homeDoador/pets" method="post" enctype="multipart/form-data">
+          <div class="mb-2">
+            <label>Nome:</label>
+            <input class="form-control" type="text" name="nome" required />
+          </div>
+          <div class="mb-2">
+            <label>Espécie:</label>
+            <input class="form-control" type="text" name="especie" required />
+          </div>
+          <div class="mb-2">
+            <label>Idade:</label>
+            <input class="form-control" type="number" name="idade" required />
+          </div>
+          <div class="mb-2">
+            <label>Descrição:</label>
+            <textarea class="form-control" name="descricao" required></textarea>
+          </div>
+          <div class="mb-2">
+            <label>Cidade:</label>
+            <input class="form-control" type="text" name="cidade" required />
+          </div>
+          <div class="mb-2">
+            <label>Imagem:</label>
+            <input class="form-control" type="file" name="imagem" accept="image/*" required />
+          </div>
+          <button class="btn btn-success" type="submit">Cadastrar</button>
+          <button class="btn btn-secondary ms-2" type="button" onclick="fecharModal()">Cancelar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Mensagens botão -->
+    <div class="messages-sidebar">
+      <a href="/chat/fixo" class="btn btn-primary">
+  <i class="fas fa-comments"></i> <!-- Exemplo de ícone -->
+</a>
+    </div>
+
+    <script>
+      function abrirModal() {
+        document.getElementById("formPet").style.display = "flex";
+      }
+      function fecharModal() {
+        document.getElementById("formPet").style.display = "none";
+      }
+    </script>
+  </body>
+</html>
+
+
+
+
